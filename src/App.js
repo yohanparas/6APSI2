@@ -12,7 +12,7 @@ const TILE_COUNT = GRID_SIZE * GRID_SIZE;
 function generateTiles() {
   const tiles = [];
   for (let i = 0; i < TILE_COUNT; i++) {
-    tiles.push(Math.random() < 0.5 ? 'chicken' : 'banana');
+    tiles.push(Math.random() < 0.5 ? 'chicken' : 'banana'); //random player start turn
   }
   return tiles;
 }
@@ -36,12 +36,11 @@ function App() {
 
   const handleTileClick = (index) => {
     if (gameStatus !== 'playing') return;
-    if (clicked[index] !== 'none') return; // Ignore already clicked tiles
+    if (clicked[index] !== 'none') return; // ignore tiles already opened
 
     const tileType = tiles[index];
 
     if (tileType === currentPlayer) {
-      // Correct click
       const newClicked = [...clicked];
       newClicked[index] = currentPlayer;
       setClicked(newClicked);
@@ -54,11 +53,11 @@ function App() {
         setWinner(currentPlayer);
         setGameStatus('ended');
       } else {
-        // Switch turn
+        // switch player turn
         setCurrentPlayer(currentPlayer === 'chicken' ? 'banana' : 'chicken');
       }
     } else {
-      // Mistake! Other player wins immediately
+      // if wrong, other player wins
       setWinner(currentPlayer === 'chicken' ? 'banana' : 'chicken');
       setGameStatus('ended');
       const newClicked = [...clicked];
@@ -119,7 +118,7 @@ function App() {
           let content;
 
           if (tileClicked === 'none') {
-            // Covered tile
+            // cover the tile
             content = null;
           } else if (tileClicked === 'chicken') {
             borderColor = 'blue';
@@ -151,7 +150,7 @@ function App() {
                 cursor:
                   gameStatus === 'playing' &&
                   tileClicked === 'none' &&
-                  currentPlayer // allow only current player to click
+                  currentPlayer // only current player can click
                     ? 'pointer'
                     : 'default',
                 userSelect: 'none',
@@ -177,19 +176,7 @@ function App() {
         </div>
       )}
 
-      {gameStatus === 'playing' && (
-        <div className="instructions" style={{ marginTop: '20px' }}>
-          <p>
-            <strong>Instructions:</strong>
-          </p>
-          <ul>
-            <li>Players alternate turns.</li>
-            <li>Click a covered tile on your turn to reveal it.</li>
-            <li>Reveal all your tiles without mistakes to win.</li>
-            <li>Clicking a wrong tile causes immediate loss.</li>
-          </ul>
-        </div>
-      )}
+      {gameStatus === 'playing'}
     </div>
   );
 }
