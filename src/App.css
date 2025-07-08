@@ -1,48 +1,65 @@
+/* Container Styles */
 .container {
   max-width: 600px;
   margin: 30px auto;
   text-align: center;
-  font-family: Arial, sans-serif;
+  font-family: 'Arial', sans-serif;
+  background-color: #f0f8f4; /* Light matcha background */
+  padding: 20px;
+  border-radius: 12px;
 }
 
+/* Grid Styles */
 .grid {
   display: grid;
   justify-content: center;
+  margin-top: 20px;
 }
 
+/* Tile Styles */
 .tile {
   width: 80px;
   height: 80px;
-  background-color: #777;
-  border-radius: 6px;
+  background-color: #d8e8d5; /* Light matcha green */
+  border-radius: 8px;
   box-sizing: border-box;
   transition: background-color 0.2s, border-color 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* Tile hover effect */
 .tile:hover {
   filter: brightness(1.2);
+  background-color: #b3d3b0; /* Darker matcha green on hover */
 }
 
+/* Tile images */
 .tile-img {
   max-width: 70px;
   max-height: 70px;
   user-select: none;
 }
 
+/* Start button styles */
 .start-button {
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 12px 24px;
+  font-size: 18px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
-  background-color: #007bff;
+  background-color: #4caf50; /* Matcha green */
   color: white;
+  font-weight: bold;
+  transition: background-color 0.3s;
 }
 
 .start-button:hover {
-  background-color: #0056b3;
+  background-color: #388e3c; /* Darker matcha green on hover */
 }
 
+/* Instructions */
 .instructions {
   text-align: left;
   max-width: 400px;
@@ -51,6 +68,54 @@
   color: #333;
 }
 
+/* Result message styles */
 .result h2 {
-  color: green;
+  color: #4caf50; /* Matcha green */
+  font-size: 24px;
+}
+
+/* Current player turn styles */
+h3 {
+  font-size: 18px;
+  margin-top: 15px;
+  font-weight: bold;
+  color: #4caf50; /* Matcha green for player text */
+}
+
+/* Tile number on top left corner */
+.tile span {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 14px;
+  color: #4caf50; /* Matcha green for tile numbers */
+  font-weight: bold;
+  opacity: 0.8;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Game container background */
+body {
+  background-color: #f7f7f5; /* Soft off-white background */
+  color: #333;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Hold Button Styles */
+.hold-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  background-color: #4caf50; /* Matcha green */
+  color: white;
+  font-weight: bold;
+  margin-top: 20px;
+  transition: background-color 0.3s;
+}
+
+.hold-button:hover {
+  background-color: #388e3c; /* Darker matcha green on hover */
 }
