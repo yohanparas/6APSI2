@@ -10,10 +10,25 @@ const GRID_SIZE = 6;
 const TILE_COUNT = GRID_SIZE * GRID_SIZE;
 
 function generateTiles() {
+  const halfTileCount = TILE_COUNT / 2;
   const tiles = [];
-  for (let i = 0; i < TILE_COUNT; i++) {
-    tiles.push(Math.random() < 0.5 ? 'chicken' : 'banana'); //random player start turn
+
+  // Add half chicken tiles
+  for (let i = 0; i < halfTileCount; i++) {
+    tiles.push('chicken');
   }
+
+  // Add half banana tiles
+  for (let i = 0; i < halfTileCount; i++) {
+    tiles.push('banana');
+  }
+
+  // Shuffle the tiles array to randomize their order
+  for (let i = tiles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [tiles[i], tiles[j]] = [tiles[j], tiles[i]]; // Swap elements
+  }
+
   return tiles;
 }
 
@@ -22,17 +37,14 @@ function App() {
   const [clicked, setClicked] = useState(Array(TILE_COUNT).fill('none'));
   const [gameStatus, setGameStatus] = useState('waiting'); // waiting, playing, ended
   const [winner, setWinner] = useState(null);
-  const [currentPlayer, setCurrentPlayer] = useState('chicken'); // determine player turn
+  const [player1Choice, setPlayer1Choice] = useState(null); // Player 1's choice
+  const [player2Choice, setPlayer2Choice] = useState(null); // Player 2's choice
+  const [currentPlayer, setCurrentPlayer] = useState(1); // track whose turn it is: 1 or 2
+  const [isRevealed, setIsRevealed] = useState(false); // Track if tiles are revealed
+  const [playerPicked, setPlayerPicked] = useState(false); // Track if players have picked
 
   const chickenTilesCount = tiles.filter((t) => t === 'chicken').length;
   const bananaTilesCount = tiles.filter((t) => t === 'banana').length;
-
-  const chickenClickedCount = clicked.filter(
-    (c, i) => c === 'chicken' && tiles[i] === 'chicken'
-  ).length;
-  const bananaClickedCount = clicked.filter(
-    (c, i) => c === 'banana' && tiles[i] === 'banana'
-  ).length;
 
   const handleTileClick = (index) => {
     if (gameStatus !== 'playing') return;
@@ -40,30 +52,27 @@ function App() {
 
     const tileType = tiles[index];
 
-    if (tileType === currentPlayer) {
-      const newClicked = [...clicked];
-      newClicked[index] = currentPlayer;
-      setClicked(newClicked);
-
-      // Check win condition
-      if (
-        (currentPlayer === 'chicken' && chickenClickedCount + 1 === chickenTilesCount) ||
-        (currentPlayer === 'banana' && bananaClickedCount + 1 === bananaTilesCount)
-      ) {
-        setWinner(currentPlayer);
-        setGameStatus('ended');
+    // Determine the winner based on the first tile clicked
+    if (currentPlayer === 1) {
+      if (player1Choice === tileType) {
+        setWinner('Player 1 Wins!');
       } else {
-        // switch player turn
-        setCurrentPlayer(currentPlayer === 'chicken' ? 'banana' : 'chicken');
+        setWinner('Player 2 Wins!');
       }
     } else {
-      // if wrong, other player wins
-      setWinner(currentPlayer === 'chicken' ? 'banana' : 'chicken');
-      setGameStatus('ended');
-      const newClicked = [...clicked];
-      newClicked[index] = 'mistake';
-      setClicked(newClicked);
+      if (player2Choice === tileType) {
+        setWinner('Player 2 Wins!');
+      } else {
+        setWinner('Player 1 Wins!');
+      }
     }
+
+    // Mark the tile as clicked and reveal all tiles
+    const newClicked = [...clicked];
+    newClicked[index] = tileType;
+    setClicked(newClicked);
+    setIsRevealed(true);
+    setGameStatus('ended');
   };
 
   const startGame = () => {
@@ -71,7 +80,9 @@ function App() {
     setClicked(Array(TILE_COUNT).fill('none'));
     setWinner(null);
     setGameStatus('playing');
-     setCurrentPlayer(Math.random() < 0.5 ? 'chicken' : 'banana');
+    setCurrentPlayer(1); // Player 1 starts first
+    setPlayerPicked(true);
+    setIsRevealed(false); // Hide tiles at the start of the game
   };
 
   const restartGame = () => {
@@ -79,28 +90,68 @@ function App() {
     setClicked(Array(TILE_COUNT).fill('none'));
     setWinner(null);
     setGameStatus('waiting');
-     setCurrentPlayer(Math.random() < 0.5 ? 'chicken' : 'banana');
+    setPlayer1Choice(null);
+    setPlayer2Choice(null);
+    setCurrentPlayer(1);
+    setPlayerPicked(false);
+    setIsRevealed(false); // Hide tiles after restart
+  };
+
+  const handleChoice = (player, choice) => {
+    if (player === 1) {
+      setPlayer1Choice(choice);
+    } else {
+      setPlayer2Choice(choice);
+    }
+  };
+
+  // Toggle the reveal state when the button is pressed
+  const toggleReveal = () => {
+    setIsRevealed(!isRevealed);
   };
 
   return (
     <div className="container">
       <h1>Chicken Banana Game</h1>
 
-      {(gameStatus === 'waiting' || gameStatus === 'ended') && (
-        <button
-          onClick={gameStatus === 'waiting' ? startGame : restartGame}
-          className="start-button"
-        >
-          {gameStatus === 'waiting' ? 'Start Game (Both agree)' : 'Restart Game'}
+      {gameStatus === 'waiting' && (
+        <div>
+          <h3>Player 1, select your choice:</h3>
+          <button onClick={() => handleChoice(1, 'chicken')} className="choice-button">
+            Chicken
+          </button>
+          <button onClick={() => handleChoice(1, 'banana')} className="choice-button">
+            Banana
+          </button>
+
+          {player1Choice && (
+            <>
+              <h3>Player 2, select your choice:</h3>
+              <button onClick={() => handleChoice(2, 'chicken')} className="choice-button">
+                Chicken
+              </button>
+              <button onClick={() => handleChoice(2, 'banana')} className="choice-button">
+                Banana
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {gameStatus === 'waiting' && player1Choice && player2Choice && (
+        <button onClick={startGame} className="start-button">
+          Start Game
         </button>
       )}
 
       {gameStatus === 'playing' && (
-        <h3 style={{ marginTop: '10px' }}>
-          Current Turn: <span style={{ color: currentPlayer === 'chicken' ? 'blue' : 'green' }}>
-            {currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} Player
-          </span>
-        </h3>
+        <>
+          <h3>Game in Progress</h3>
+          <p>Current Player: {currentPlayer === 1 ? 'Player 1' : 'Player 2'}</p>
+          <button onClick={toggleReveal} className="hold-button">
+            {isRevealed ? 'Close Tiles' : 'Reveal Tiles'}
+          </button>
+        </>
       )}
 
       <div
@@ -117,24 +168,18 @@ function App() {
           let borderColor = 'gray';
           let content;
 
-          if (tileClicked === 'none') {
+          // Reveal or hide the tiles based on the toggle state
+          const reveal = isRevealed || tileClicked !== 'none';
+
+          if (tileClicked === 'none' && !reveal) {
             // cover the tile
             content = null;
-          } else if (tileClicked === 'chicken') {
-            borderColor = 'blue';
+          } else if (tile === 'chicken') {
+            borderColor = tileClicked === 'mistake' ? 'red' : 'blue';
             content = <img src={CHICKEN_IMG} alt="Chicken" className="tile-img" />;
-          } else if (tileClicked === 'banana') {
-            borderColor = 'yellowgreen';
+          } else if (tile === 'banana') {
+            borderColor = tileClicked === 'mistake' ? 'red' : 'yellowgreen';
             content = <img src={BANANA_IMG} alt="Banana" className="tile-img" />;
-          } else if (tileClicked === 'mistake') {
-            borderColor = 'red';
-            content = (
-              <img
-                src={tile === 'chicken' ? CHICKEN_IMG : BANANA_IMG}
-                alt="Mistake"
-                className="tile-img"
-              />
-            );
           }
 
           return (
@@ -143,17 +188,18 @@ function App() {
               className="tile"
               style={{
                 border: `3px solid ${borderColor}`,
-                backgroundColor: tileClicked === 'none' ? '#777' : 'white',
+                backgroundColor: tileClicked === 'none' && !reveal ? '#777' : 'white',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
                 cursor:
                   gameStatus === 'playing' &&
                   tileClicked === 'none' &&
-                  currentPlayer // only current player can click
+                  currentPlayer // only active once player picked
                     ? 'pointer'
                     : 'default',
                 userSelect: 'none',
+                position: 'relative',
               }}
               onClick={() => {
                 if (gameStatus === 'playing' && tileClicked === 'none') {
@@ -162,6 +208,22 @@ function App() {
               }}
               title={`Tile #${idx + 1}`}
             >
+              {/* Tile number in top-left corner */}
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 4,
+                  left: 6,
+                  fontSize: 14,
+                  color: tileClicked === 'none' && !reveal ? '#fff' : '#888',
+                  fontWeight: 'bold',
+                  opacity: 0.8,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                }}
+              >
+                {idx + 1}
+              </span>
               {content}
             </div>
           );
@@ -170,13 +232,12 @@ function App() {
 
       {gameStatus === 'ended' && winner && (
         <div className="result" style={{ marginTop: '20px' }}>
-          <h2 style={{ color: winner === 'chicken' ? 'blue' : 'green' }}>
-            {winner.charAt(0).toUpperCase() + winner.slice(1)} player wins!
-          </h2>
+          <h2>{winner}</h2>
+          <button onClick={restartGame} className="restart-button">
+            Restart Game
+          </button>
         </div>
       )}
-
-      {gameStatus === 'playing'}
     </div>
   );
 }
